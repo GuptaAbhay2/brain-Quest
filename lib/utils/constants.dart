@@ -8,4 +8,5 @@ class AppConstants {
 
   // Game config
   static const int totalLevels = 40;
+  static const int mathQuestionsPerLevel = 8;
 }

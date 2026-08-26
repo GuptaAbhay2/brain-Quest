@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/game_type.dart';
 import '../providers/level_provider.dart';
 import '../utils/app_text_styles.dart';
 import '../utils/constants.dart';
 import '../utils/encouraging_lines.dart';
+import '../utils/level_config_generator.dart';
 import '../widgets/game_summary_card.dart';
-import '../widgets/level_circle_tile.dart';
+import '../widgets/level_path_tile.dart';
+import 'games/number_tap_game_screen.dart';
+import 'games/word_builder_game_screen.dart';
+import 'games/math_true_false_game_screen.dart';
+import 'games/image_naming_game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,26 +56,51 @@ class _HomeScreenState extends State<HomeScreen> {
                 maxStars: AppConstants.totalLevels * 3,
                 currentLevel: currentLevel,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(top: 12, bottom: 24),
+                  padding: const EdgeInsets.only(top: 8, bottom: 32),
                   itemCount: levels.length,
                   itemBuilder: (context, index) {
                     final level = levels[index];
                     final isCurrent = level.levelNumber == currentLevel;
+                    final previousCompleted =
+                        index == 0 ? false : levels[index - 1].isCompleted;
 
-                    return LevelCircleTile(
+                    double lockedOpacity = 1.0;
+                    if (!level.isUnlocked) {
+                      final distance = level.levelNumber - currentLevel;
+                      lockedOpacity = (1.0 - (distance * 0.15)).clamp(0.25, 1.0);
+                    }
+
+                    return LevelPathTile(
                       progress: level,
                       isCurrent: isCurrent,
+                      showTopConnector: index != 0,
+                      topConnectorBright: previousCompleted,
+                      statsOnLeft: index.isEven,
+                      lockedOpacity: lockedOpacity,
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Level ${level.levelNumber} tapped — game screen aage banayenge'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        final config = LevelConfigGenerator.getConfig(level.levelNumber);
+                        final gameType = LevelConfigGenerator.getGameType(config);
+
+                        Widget screen;
+                        switch (gameType) {
+                          case GameType.numberTap:
+                            screen = NumberTapGameScreen(levelNumber: level.levelNumber);
+                            break;
+                          case GameType.wordBuilder:
+                            screen = WordBuilderGameScreen(levelNumber: level.levelNumber);
+                            break;
+                          case GameType.mathTrueFalse:
+                            screen = MathTrueFalseGameScreen(levelNumber: level.levelNumber);
+                            break;
+                          case GameType.imageNaming:
+                            screen = ImageNamingGameScreen(levelNumber: level.levelNumber);
+                            break;
+                        }
+
+                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
                       },
                     );
                   },

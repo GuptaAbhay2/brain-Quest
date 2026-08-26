@@ -16,59 +16,96 @@ class GameSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progress = maxStars == 0 ? 0.0 : totalStars / maxStars;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           colors: [AppColors.surfaceLight, AppColors.surface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+        border: Border.all(color: AppColors.primary.withOpacity(0.25), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: AppColors.primary.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _statColumn(
-              icon: Icons.star_rounded,
-              iconColor: AppColors.star,
-              label: 'Total Stars',
-              value: '$totalStars/$maxStars',
+          Row(
+            children: [
+              Expanded(
+                child: _statTile(
+                  icon: Icons.star_rounded,
+                  iconColor: AppColors.star,
+                  value: '$totalStars',
+                  suffix: '/$maxStars',
+                  label: 'Total Stars',
+                ),
+              ),
+              Container(width: 1, height: 52, color: AppColors.textMuted.withOpacity(0.25)),
+              Expanded(
+                child: _statTile(
+                  icon: Icons.flag_rounded,
+                  iconColor: AppColors.secondary,
+                  value: '$currentLevel',
+                  suffix: '',
+                  label: 'Current Level',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: AppColors.background,
+              valueColor: const AlwaysStoppedAnimation(AppColors.star),
             ),
           ),
-          Container(width: 1, height: 40, color: AppColors.textMuted.withOpacity(0.3)),
-          Expanded(
-            child: _statColumn(
-              icon: Icons.flag_rounded,
-              iconColor: AppColors.secondary,
-              label: 'Current Level',
-              value: '$currentLevel',
-            ),
+          const SizedBox(height: 6),
+          Text(
+            '${(progress * 100).toStringAsFixed(0)}% journey complete',
+            style: AppTextStyles.body.copyWith(fontSize: 11),
           ),
         ],
       ),
     );
   }
 
-  Widget _statColumn({
+  Widget _statTile({
     required IconData icon,
     required Color iconColor,
-    required String label,
     required String value,
+    required String suffix,
+    required String label,
   }) {
     return Column(
       children: [
-        Icon(icon, color: iconColor, size: 28),
-        const SizedBox(height: 6),
-        Text(value, style: AppTextStyles.heading2),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withOpacity(0.15)),
+          child: Icon(icon, color: iconColor, size: 24),
+        ),
+        const SizedBox(height: 8),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(text: value, style: AppTextStyles.heading1.copyWith(fontSize: 22)),
+              TextSpan(text: suffix, style: AppTextStyles.body.copyWith(fontSize: 14)),
+            ],
+          ),
+        ),
         const SizedBox(height: 2),
         Text(label, style: AppTextStyles.body.copyWith(fontSize: 12)),
       ],
