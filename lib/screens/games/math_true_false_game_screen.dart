@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/game_type.dart';
 import '../../providers/level_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../services/audio_service.dart';
@@ -10,6 +11,7 @@ import '../../utils/app_text_styles.dart';
 import '../../utils/constants.dart';
 import '../../utils/level_config_generator.dart';
 import '../../utils/star_calculator.dart';
+import '../result_screen.dart';
 
 class _MathQuestion {
   final int operandA;
@@ -188,6 +190,7 @@ class _MathTrueFalseGameScreenState extends State<MathTrueFalseGameScreen> {
 
     final levelProvider = context.read<LevelProvider>();
     final statsProvider = context.read<StatsProvider>();
+    final previousBestStars = levelProvider.getLevelProgress(widget.levelNumber)?.starsEarned ?? 0;
 
     await levelProvider.completeLevel(
       levelNumber: widget.levelNumber,
@@ -198,57 +201,19 @@ class _MathTrueFalseGameScreenState extends State<MathTrueFalseGameScreen> {
     await statsProvider.recordGameSession(starsEarned: stars, timeSpentSeconds: timeTaken);
 
     if (!mounted) return;
-    _showResultDialog(stars, timeTaken);
-  }
-
-  void _showResultDialog(int stars, int timeSeconds) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Level Complete! 🎉', style: AppTextStyles.heading2, textAlign: TextAlign.center),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                return Icon(
-                  i < stars ? Icons.star_rounded : Icons.star_border_rounded,
-                  color: AppColors.star,
-                  size: 40,
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-            Text('Correct: $_correctCount/${_questions.length}', style: AppTextStyles.body),
-            Text('Time: ${timeSeconds}s', style: AppTextStyles.body),
-          ],
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(
+          levelNumber: widget.levelNumber,
+          gameType: GameType.mathTrueFalse,
+          starsEarned: stars,
+          timeTakenSeconds: timeTaken,
+          wrongTaps: _wrongCount,
+          isNewBest: stars > previousBestStars,
+          extraInfoLabel: 'Correct',
+          extraInfoValue: '$_correctCount/${_questions.length}',
+          playAgainBuilder: (_) => MathTrueFalseGameScreen(levelNumber: widget.levelNumber),
         ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: Text('Home', style: AppTextStyles.body),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => MathTrueFalseGameScreen(levelNumber: widget.levelNumber),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: Text('Play Again', style: AppTextStyles.button),
-          ),
-        ],
       ),
     );
   }

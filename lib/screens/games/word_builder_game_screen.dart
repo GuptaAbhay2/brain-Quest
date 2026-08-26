@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/game_type.dart';
 import '../../providers/level_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../services/audio_service.dart';
@@ -9,6 +10,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_text_styles.dart';
 import '../../utils/level_config_generator.dart';
 import '../../utils/star_calculator.dart';
+import '../result_screen.dart';
 
 class _LetterCard {
   final int id;
@@ -79,7 +81,6 @@ class _WordBuilderGameScreenState extends State<WordBuilderGameScreen> {
     if (mounted) setState(() {});
   }
 
-  // distractorCount tweak kar sakta hai — jitna zyada, utna hard/mixed lagega
   List<_LetterCard> _generateCards() {
     final letters = _targetWord.split('');
     final cards = <_LetterCard>[
@@ -135,6 +136,7 @@ class _WordBuilderGameScreenState extends State<WordBuilderGameScreen> {
 
     final levelProvider = context.read<LevelProvider>();
     final statsProvider = context.read<StatsProvider>();
+    final previousBestStars = levelProvider.getLevelProgress(widget.levelNumber)?.starsEarned ?? 0;
 
     await levelProvider.completeLevel(
       levelNumber: widget.levelNumber,
@@ -145,7 +147,21 @@ class _WordBuilderGameScreenState extends State<WordBuilderGameScreen> {
     await statsProvider.recordGameSession(starsEarned: stars, timeSpentSeconds: timeTaken);
 
     if (!mounted) return;
-    _showResultDialog(stars, timeTaken);
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(
+          levelNumber: widget.levelNumber,
+          gameType: GameType.wordBuilder,
+          starsEarned: stars,
+          timeTakenSeconds: timeTaken,
+          wrongTaps: _wrongTapCount,
+          isNewBest: stars > previousBestStars,
+          extraInfoLabel: 'Word',
+          extraInfoValue: _targetWord,
+          playAgainBuilder: (_) => WordBuilderGameScreen(levelNumber: widget.levelNumber),
+        ),
+      ),
+    );
   }
 
   void _onTimeUp() {
@@ -178,54 +194,6 @@ class _WordBuilderGameScreenState extends State<WordBuilderGameScreen> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: Text('Replay', style: AppTextStyles.button),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showResultDialog(int stars, int timeSeconds) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Level Complete! 🎉', style: AppTextStyles.heading2, textAlign: TextAlign.center),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                return Icon(
-                  i < stars ? Icons.star_rounded : Icons.star_border_rounded,
-                  color: AppColors.star,
-                  size: 40,
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-            Text('Time: ${timeSeconds}s', style: AppTextStyles.body),
-            Text('Wrong Taps: $_wrongTapCount', style: AppTextStyles.body),
-          ],
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: Text('Home', style: AppTextStyles.body),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _startNewAttempt();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: Text('Play Again', style: AppTextStyles.button),
           ),
         ],
       ),
