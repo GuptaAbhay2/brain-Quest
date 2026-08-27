@@ -6,21 +6,24 @@ class GameSummaryCard extends StatelessWidget {
   final int totalStars;
   final int maxStars;
   final int currentLevel;
+  final int currentStreak;
 
   const GameSummaryCard({
     super.key,
     required this.totalStars,
     required this.maxStars,
     required this.currentLevel,
+    required this.currentStreak,
   });
 
   @override
   Widget build(BuildContext context) {
     final progress = maxStars == 0 ? 0.0 : totalStars / maxStars;
+    final progressPercent = (progress * 100).toStringAsFixed(0);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -38,7 +41,18 @@ class GameSummaryCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'YOUR PROGRESS',
+            style: AppTextStyles.body.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -47,38 +61,62 @@ class GameSummaryCard extends StatelessWidget {
                   iconColor: AppColors.star,
                   value: '$totalStars',
                   suffix: '/$maxStars',
-                  label: 'Total Stars',
+                  label: 'Stars',
                 ),
               ),
-              Container(width: 1, height: 52, color: AppColors.textMuted.withOpacity(0.25)),
+              _verticalDivider(),
               Expanded(
                 child: _statTile(
                   icon: Icons.flag_rounded,
                   iconColor: AppColors.secondary,
                   value: '$currentLevel',
                   suffix: '',
-                  label: 'Current Level',
+                  label: 'Level',
+                ),
+              ),
+              _verticalDivider(),
+              Expanded(
+                child: _statTile(
+                  icon: Icons.local_fire_department_rounded,
+                  iconColor: const Color(0xFFFF6B35),
+                  value: '$currentStreak',
+                  suffix: '',
+                  label: 'Streak',
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 8,
-              backgroundColor: AppColors.background,
-              valueColor: const AlwaysStoppedAnimation(AppColors.star),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${(progress * 100).toStringAsFixed(0)}% journey complete',
-            style: AppTextStyles.body.copyWith(fontSize: 11),
+          const SizedBox(height: 20),
+          _buildProgressBar(progress),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Journey Progress',
+                style: AppTextStyles.body.copyWith(fontSize: 11, color: AppColors.textMuted),
+              ),
+              Text(
+                '$progressPercent%',
+                style: AppTextStyles.body.copyWith(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _verticalDivider() {
+    return Container(
+      width: 1,
+      height: 48,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      color: AppColors.textMuted.withOpacity(0.2),
     );
   }
 
@@ -92,23 +130,45 @@ class GameSummaryCard extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withOpacity(0.15)),
-          child: Icon(icon, color: iconColor, size: 24),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
         const SizedBox(height: 8),
         RichText(
           text: TextSpan(
             children: [
-              TextSpan(text: value, style: AppTextStyles.heading1.copyWith(fontSize: 22)),
-              TextSpan(text: suffix, style: AppTextStyles.body.copyWith(fontSize: 14)),
+              TextSpan(text: value, style: AppTextStyles.heading2.copyWith(fontSize: 19)),
+              TextSpan(text: suffix, style: AppTextStyles.body.copyWith(fontSize: 12)),
             ],
           ),
         ),
         const SizedBox(height: 2),
-        Text(label, style: AppTextStyles.body.copyWith(fontSize: 12)),
+        Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
       ],
+    );
+  }
+
+  Widget _buildProgressBar(double progress) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: [
+          Container(height: 10, color: AppColors.background),
+          FractionallySizedBox(
+            widthFactor: progress.clamp(0.0, 1.0),
+            child: Container(
+              height: 10,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.secondary],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

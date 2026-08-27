@@ -111,33 +111,39 @@ class _LevelPathTileState extends State<LevelPathTile>
   }
 
   Widget _buildSmallCircle(bool isLocked, bool isCompleted) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.background,
-        border: Border.all(
-          color: isLocked ? AppColors.lockedLevel : AppColors.currentLevelGlow,
-          width: 2,
+    return Hero(
+      tag: 'level-${widget.progress.levelNumber}',
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.background,
+            border: Border.all(
+              color: isLocked ? AppColors.lockedLevel : AppColors.currentLevelGlow,
+              width: 2,
+            ),
+            boxShadow: isLocked
+                ? []
+                : [
+                    BoxShadow(
+                      color: AppColors.currentLevelGlow.withOpacity(0.35),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+          ),
+          child: Center(
+            child: isLocked
+                ? Icon(Icons.lock_rounded, color: AppColors.textMuted, size: 18)
+                : Text(
+                    '${widget.progress.levelNumber}',
+                    style: AppTextStyles.levelNumber.copyWith(fontSize: 16),
+                  ),
+          ),
         ),
-        boxShadow: isLocked
-            ? []
-            : [
-                BoxShadow(
-                  color: AppColors.currentLevelGlow.withOpacity(0.35),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-      ),
-      child: Center(
-        child: isLocked
-            ? Icon(Icons.lock_rounded, color: AppColors.textMuted, size: 18)
-            : Text(
-                '${widget.progress.levelNumber}',
-                style: AppTextStyles.levelNumber.copyWith(fontSize: 16),
-              ),
       ),
     );
   }
@@ -214,6 +220,12 @@ class _LevelPathTileState extends State<LevelPathTile>
       );
     }
 
-    return GestureDetector(onTap: widget.onTap, child: circle);
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Hero(
+        tag: 'level-${widget.progress.levelNumber}',
+        child: Material(color: Colors.transparent, child: circle),
+      ),
+    );
   }
 }

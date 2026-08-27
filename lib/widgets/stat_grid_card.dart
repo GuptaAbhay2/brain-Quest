@@ -18,27 +18,43 @@ class StatGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.surfaceLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withOpacity(0.15)),
-            child: Icon(icon, color: iconColor, size: 20),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [iconColor.withOpacity(0.16), AppColors.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(height: 14),
-          Text(value, style: AppTextStyles.heading2.copyWith(fontSize: 22)),
-          const SizedBox(height: 2),
-          Text(label, style: AppTextStyles.body.copyWith(fontSize: 12)),
-        ],
+          border: Border.all(color: iconColor.withOpacity(0.35)),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              right: -12,
+              top: -12,
+              child: Icon(icon, size: 64, color: iconColor.withOpacity(0.14)),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withOpacity(0.2)),
+                  child: Icon(icon, color: iconColor, size: 19),
+                ),
+                const SizedBox(height: 14),
+                Text(value, style: AppTextStyles.heading1.copyWith(fontSize: 24)),
+                const SizedBox(height: 2),
+                Text(label, style: AppTextStyles.body.copyWith(fontSize: 11.5)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

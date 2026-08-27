@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/game_type.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_page_route.dart';
 import '../utils/app_text_styles.dart';
+import '../utils/constants.dart';
+import '../utils/level_config_generator.dart';
+import 'games/number_tap_game_screen.dart';
+import 'games/word_builder_game_screen.dart';
+import 'games/math_true_false_game_screen.dart';
+import 'games/image_naming_game_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   final int levelNumber;
@@ -34,6 +41,8 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
+  bool get _isFinalLevel => widget.levelNumber == AppConstants.totalLevels;
+
   @override
   void initState() {
     super.initState();
@@ -64,8 +73,32 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
   void _playAgain() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: widget.playAgainBuilder),
+      AppPageRoute(builder: widget.playAgainBuilder),
     );
+  }
+
+  void _goToNextLevel() {
+    final nextLevelNumber = widget.levelNumber + 1;
+    final config = LevelConfigGenerator.getConfig(nextLevelNumber);
+    final gameType = LevelConfigGenerator.getGameType(config);
+
+    Widget screen;
+    switch (gameType) {
+      case GameType.numberTap:
+        screen = NumberTapGameScreen(levelNumber: nextLevelNumber);
+        break;
+      case GameType.wordBuilder:
+        screen = WordBuilderGameScreen(levelNumber: nextLevelNumber);
+        break;
+      case GameType.mathTrueFalse:
+        screen = MathTrueFalseGameScreen(levelNumber: nextLevelNumber);
+        break;
+      case GameType.imageNaming:
+        screen = ImageNamingGameScreen(levelNumber: nextLevelNumber);
+        break;
+    }
+
+    Navigator.of(context).pushReplacement(AppPageRoute(builder: (_) => screen));
   }
 
   @override
@@ -84,7 +117,19 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               const Spacer(),
               _buildGlowBadge(),
               const SizedBox(height: 28),
-              Text('Level Complete!', style: AppTextStyles.heading1),
+              Text(
+                _isFinalLevel ? 'Brain Quest Complete! 🏆' : 'Level Complete!',
+                style: AppTextStyles.heading1,
+                textAlign: TextAlign.center,
+              ),
+              if (_isFinalLevel) ...[
+                const SizedBox(height: 6),
+                Text(
+                  "You've cleared all ${AppConstants.totalLevels} levels — true Brain Master!",
+                  style: AppTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: 16),
               _buildStars(),
               if (widget.isNewBest) ...[
@@ -122,7 +167,11 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           ),
         ],
       ),
-      child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 48),
+      child: Icon(
+        _isFinalLevel ? Icons.military_tech_rounded : Icons.emoji_events_rounded,
+        color: Colors.white,
+        size: 48,
+      ),
     );
   }
 
@@ -199,29 +248,83 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: _goHome,
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              side: BorderSide(color: AppColors.textMuted.withOpacity(0.5)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    final hasNextLevel = !_isFinalLevel;
+
+    if (hasNextLevel) {
+      return Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _goToNextLevel,
+              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+              label: Text('Next Level', style: AppTextStyles.button),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
             ),
-            child: Text('Home', style: AppTextStyles.button),
           ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _goHome,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(color: AppColors.textMuted.withOpacity(0.5)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text('Home', style: AppTextStyles.body),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _playAgain,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(color: AppColors.textMuted.withOpacity(0.5)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text('Play Again', style: AppTextStyles.body),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
           child: ElevatedButton(
             onPressed: _playAgain,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             child: Text('Play Again', style: AppTextStyles.button),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _goHome,
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              side: BorderSide(color: AppColors.textMuted.withOpacity(0.5)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: Text('Home', style: AppTextStyles.body),
           ),
         ),
       ],

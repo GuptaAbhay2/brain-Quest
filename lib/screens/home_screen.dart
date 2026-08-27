@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_type.dart';
 import '../providers/level_provider.dart';
+import '../providers/stats_provider.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_page_route.dart';
 import '../utils/app_text_styles.dart';
 import '../utils/constants.dart';
 import '../utils/encouraging_lines.dart';
@@ -33,30 +36,43 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Brain Quest')),
-      body: Consumer<LevelProvider>(
-        builder: (context, levelProvider, _) {
+      body: Consumer2<LevelProvider, StatsProvider>(
+        builder: (context, levelProvider, statsProvider, _) {
           final levels = levelProvider.levels;
           final currentLevel = levelProvider.currentLevelNumber;
 
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Welcome back! 👋', style: AppTextStyles.heading1),
-                    const SizedBox(height: 4),
-                    Text(_encouragingLine, style: AppTextStyles.body),
+                    Text(
+                      'Welcome back! 👋',
+                      style: AppTextStyles.body.copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _encouragingLine,
+                      style: AppTextStyles.body.copyWith(fontSize: 12, color: AppColors.textMuted),
+                    ),
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
               GameSummaryCard(
                 totalStars: levelProvider.totalStarsEarned,
                 maxStars: AppConstants.totalLevels * 3,
                 currentLevel: currentLevel,
+                currentStreak: statsProvider.currentStreak,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.only(top: 8, bottom: 32),
@@ -100,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             break;
                         }
 
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+                        Navigator.of(context).push(AppPageRoute(builder: (_) => screen));
                       },
                     );
                   },

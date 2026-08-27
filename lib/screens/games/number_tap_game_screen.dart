@@ -7,7 +7,9 @@ import '../../providers/level_provider.dart';
 import '../../providers/stats_provider.dart';
 import '../../services/audio_service.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_page_route.dart';
 import '../../utils/app_text_styles.dart';
+import '../../utils/dialogs.dart';
 import '../../utils/level_config_generator.dart';
 import '../../utils/star_calculator.dart';
 import '../result_screen.dart';
@@ -139,7 +141,7 @@ class _NumberTapGameScreenState extends State<NumberTapGameScreen> {
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (_) => ResultScreen(
           levelNumber: widget.levelNumber,
           gameType: GameType.numberTap,
@@ -149,6 +151,17 @@ class _NumberTapGameScreenState extends State<NumberTapGameScreen> {
           isNewBest: stars > previousBestStars,
           playAgainBuilder: (_) => NumberTapGameScreen(levelNumber: widget.levelNumber),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRangeHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Text(
+        'Find numbers 1-$_maxNumber',
+        textAlign: TextAlign.center,
+        style: AppTextStyles.heading2.copyWith(fontSize: 19),
       ),
     );
   }
@@ -244,9 +257,42 @@ class _NumberTapGameScreenState extends State<NumberTapGameScreen> {
     final diameter = _circleDiameter();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Level ${widget.levelNumber}')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => showExitConfirmDialog(context),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Hero(
+              tag: 'level-${widget.levelNumber}',
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary.withOpacity(0.2),
+                    border: Border.all(color: AppColors.currentLevelGlow, width: 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${widget.levelNumber}',
+                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text('Level ${widget.levelNumber}'),
+          ],
+        ),
+      ),
       body: Column(
         children: [
+          _buildRangeHeader(),
           _buildStatsBar(),
           const Divider(height: 1, color: AppColors.surfaceLight),
           Expanded(

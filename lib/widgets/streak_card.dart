@@ -9,11 +9,9 @@ class StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
           colors: [Color(0xFFFF6B35), Color(0xFFFF9F1C)],
           begin: Alignment.topLeft,
@@ -22,22 +20,33 @@ class StreakCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF6B35).withOpacity(0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🔥', style: TextStyle(fontSize: 42)),
-          const SizedBox(height: 8),
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.18),
+            ),
+            alignment: Alignment.center,
+            child: const Text('🔥', style: TextStyle(fontSize: 30)),
+          ),
+          const SizedBox(height: 10),
           Text(
             '$streakDays',
-            style: AppTextStyles.heading1.copyWith(fontSize: 40, color: Colors.white),
+            style: AppTextStyles.heading1.copyWith(fontSize: 26, color: Colors.white),
           ),
           Text(
             'Day Streak',
             style: AppTextStyles.body.copyWith(
+              fontSize: 11,
               color: Colors.white.withOpacity(0.9),
               fontWeight: FontWeight.w600,
             ),
