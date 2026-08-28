@@ -18,154 +18,166 @@ class GameSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = maxStars == 0 ? 0.0 : totalStars / maxStars;
-    final progressPercent = (progress * 100).toStringAsFixed(0);
+    // Progress fraction calculation (0.0 to 1.0)
+    final double progress = maxStars == 0 ? 0.0 : (totalStars / maxStars).clamp(0.0, 1.0);
+    final String progressPercent = (progress * 100).toStringAsFixed(0);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          colors: [AppColors.surfaceLight, AppColors.surface],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: const Color(0xFF131B2A), // Dark theme background
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2A374F),
+          width: 1.5,
         ),
-        border: Border.all(color: AppColors.primary.withOpacity(0.25), width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'YOUR PROGRESS',
-            style: AppTextStyles.body.copyWith(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textMuted,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 16),
+          // --- TOP SECTION (Image Design) ---
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: _statTile(
-                  icon: Icons.star_rounded,
-                  iconColor: AppColors.star,
-                  value: '$totalStars',
-                  suffix: '/$maxStars',
-                  label: 'Stars',
-                ),
+              // Total Stars
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Total',
+                        style: AppTextStyles.body.copyWith(
+                          fontSize: 15,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                      Text(
+                        'Stars:',
+                        style: AppTextStyles.body.copyWith(
+                          fontSize: 15,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    '$totalStars/$maxStars',
+                    style: AppTextStyles.heading2.copyWith(
+                      fontSize: 22,
+                      color: const Color(0xFFFFD700), // Gold Star color
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.star_rounded,
+                    color: Color(0xFFFFD700),
+                    size: 26,
+                  ),
+                ],
               ),
-              _verticalDivider(),
-              Expanded(
-                child: _statTile(
-                  icon: Icons.flag_rounded,
-                  iconColor: AppColors.secondary,
-                  value: '$currentLevel',
-                  suffix: '',
-                  label: 'Level',
-                ),
-              ),
-              _verticalDivider(),
-              Expanded(
-                child: _statTile(
-                  icon: Icons.local_fire_department_rounded,
-                  iconColor: const Color(0xFFFF6B35),
-                  value: '$currentStreak',
-                  suffix: '',
-                  label: 'Streak',
-                ),
+
+              // Current Progress Level
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'CURRENT\nPROGRESS',
+                    textAlign: TextAlign.right,
+                    style: AppTextStyles.body.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey[400],
+                      letterSpacing: 0.5,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Level $currentLevel',
+                    style: AppTextStyles.heading2.copyWith(
+                      fontSize: 22,
+                      color: const Color(0xFF4DD0E1), // Cyan Level color
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildProgressBar(progress),
+
+          const SizedBox(height: 18),
+
+          // --- BOTTOM SECTION (Dynamic Progress Bar) ---
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Stack(
+              children: [
+                // Track Background
+                Container(
+                  height: 10,
+                  color: const Color(0xFF0A0F1D),
+                ),
+                // Dynamic Filled Bar
+                FractionallySizedBox(
+                  widthFactor: progress,
+                  child: Container(
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF00E5FF), // Cyan Glow
+                          Color(0xFFFFD700), // Gold Glow
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 8),
+
+          // Progress Text & Percentage
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Journey Progress',
-                style: AppTextStyles.body.copyWith(fontSize: 11, color: AppColors.textMuted),
+                style: AppTextStyles.body.copyWith(
+                  fontSize: 11,
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Text(
                 '$progressPercent%',
                 style: AppTextStyles.body.copyWith(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: const Color(0xFF4DD0E1),
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _verticalDivider() {
-    return Container(
-      width: 1,
-      height: 48,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: AppColors.textMuted.withOpacity(0.2),
-    );
-  }
-
-  Widget _statTile({
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String suffix,
-    required String label,
-  }) {
-    return Column(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: iconColor.withOpacity(0.15)),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(height: 8),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(text: value, style: AppTextStyles.heading2.copyWith(fontSize: 19)),
-              TextSpan(text: suffix, style: AppTextStyles.body.copyWith(fontSize: 12)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: AppTextStyles.body.copyWith(fontSize: 11)),
-      ],
-    );
-  }
-
-  Widget _buildProgressBar(double progress) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Stack(
-        children: [
-          Container(height: 10, color: AppColors.background),
-          FractionallySizedBox(
-            widthFactor: progress.clamp(0.0, 1.0),
-            child: Container(
-              height: 10,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
-                ),
-              ),
-            ),
           ),
         ],
       ),
