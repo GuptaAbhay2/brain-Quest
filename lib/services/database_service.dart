@@ -26,7 +26,6 @@ class DatabaseService {
     await _seedLevelsIfNeeded();
   }
 
-  // Pehli baar app open hone par sab levels create karo (level 1 unlocked, baaki locked)
   Future<void> _seedLevelsIfNeeded() async {
     if (_levelProgressBox.isEmpty) {
       for (int i = 1; i <= AppConstants.totalLevels; i++) {
