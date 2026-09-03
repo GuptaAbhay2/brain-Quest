@@ -9,8 +9,7 @@ class AudioService {
   Future<void> playTap() async {
     try {
       await _player.play(AssetSource('sounds/tap.mp3'));
-    } catch (_) {
-      // Sound file abhi add nahi hui hai — silently ignore, app crash nahi hoga
+    } catch (_) 
     }
   }
 
